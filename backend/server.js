@@ -9,6 +9,8 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
+app.use('/api/auth', require('./routes/authRoutes'));
+
 app.get('/api/test', (req, res) => {
   res.send('API is working');
 });
