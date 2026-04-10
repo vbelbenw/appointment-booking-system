@@ -2,6 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const authMiddleware = require('./middleware/authMiddleware');
+const bookingRoutes = require('./routes/bookingRoutes');
+
 const app = express();
 
 // Middleware
@@ -11,7 +13,8 @@ app.use(express.json());
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/slots', require('./routes/slotRoutes'));
-
+app.use('/api/bookings', require('./routes/bookingRoutes'));
+app.use('/api/bookings', bookingRoutes);
 app.get('/api/test', (req, res) => {
   res.send('API is working');
 });
