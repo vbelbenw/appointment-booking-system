@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-
+const authMiddleware = require('./middleware/authMiddleware');
 const app = express();
 
 // Middleware
@@ -10,9 +10,16 @@ app.use(express.json());
 
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/slots', require('./routes/slotRoutes'));
 
 app.get('/api/test', (req, res) => {
   res.send('API is working');
+});
+app.get('/api/protected', authMiddleware, (req, res) => {
+  res.json({
+    message: "Protected route accessed",
+    user: req.user
+  });
 });
 
 // Basic error handling middleware
