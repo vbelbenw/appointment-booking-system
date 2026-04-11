@@ -7,13 +7,24 @@ const registerUser = async (req, res) => {
     const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
-      return res.status(400).json({ message: 'All fields are required' });
+      return res.status(400).json({ success: false, message: 'All fields are required' });
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ success: false, message: 'Invalid email format' });
+    }
+
+    // Password length validation
+    if (password.length < 6) {
+      return res.status(400).json({ success: false, message: 'Password must be at least 6 characters long' });
     }
 
     // Check if user already exists
     const existingUser = await User.findUserByEmail(email);
     if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
+      return res.status(400).json({ success: false, message: 'User already exists' });
     }
 
     // Hash password
@@ -23,10 +34,10 @@ const registerUser = async (req, res) => {
     // Insert into database
     await User.createUser(name, email, hashedPassword);
 
-    res.status(201).json({ message: 'User registered successfully' });
+    res.status(201).json({ success: true, message: 'User registered successfully' });
   } catch (error) {
     console.error('Error in registerUser:', error);
-    res.status(500).json({ message: 'Server Error' });
+    res.status(500).json({ success: false, message: 'Server Error' });
   }
 };
 
@@ -35,19 +46,19 @@ const loginUser = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ message: 'All fields are required' });
+      return res.status(400).json({ success: false, message: 'All fields are required' });
     }
 
     // Validate user exists
     const user = await User.findUserByEmail(email);
     if (!user) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
     // Compare password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
     // Generate JWT token
@@ -59,6 +70,7 @@ const loginUser = async (req, res) => {
     const token = jwt.sign(payload, process.env.JWT_SECRET || 'secretkey', { expiresIn: '1d' });
 
     res.json({
+      success: true,
       token,
       user: {
         id: user.id,
@@ -68,7 +80,7 @@ const loginUser = async (req, res) => {
     });
   } catch (error) {
     console.error('Error in loginUser:', error);
-    res.status(500).json({ message: 'Server Error' });
+    res.status(500).json({ success: false, message: 'Server Error' });
   }
 };
 
